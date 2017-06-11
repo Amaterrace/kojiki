@@ -47,6 +47,7 @@ class Sample : Form
 		TitleDraw();
 	}
 
+	// タイトル表示
 	public void TitleDraw()
 	{
 		// 背景

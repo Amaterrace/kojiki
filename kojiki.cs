@@ -52,39 +52,55 @@ class Sample : Form
 	{
 		// 背景
 		this.BackgroundImage = Image.FromFile("kojiki_memu_back.bmp");
-		player = new System.Media.SoundPlayer("title_kari.wav");
 
+		// BGM再生
+		player = new System.Media.SoundPlayer("title_kari.wav");
 		player.PlayLooping();
+
+		// ボタン配置
 		startBt.Parent = this;
 		exitBt.Parent = this;
 
 		flag = false;
 	}
 
-//======================ボタン================================
-	public void startBt_Click(Object sender, EventArgs e)
+	// ゲーム画面表示
+	public void GameDraw()
 	{
+		// 背景
 		this.BackgroundImage = Image.FromFile("ana.bmp");
+
+		// BGM停止
+		player.Stop();
+        player.Dispose();
+        player = null;
 
 		// ボタン消去
 		this.Controls.Remove(startBt);
 		this.Controls.Remove(exitBt);
 
-		player.Stop();
-        player.Dispose();
-        player = null;
-
 		flag = true;
+	}
+
+//======================ボタン================================
+	public void startBt_Click(Object sender, EventArgs e)
+	{
+		GameDraw();
 	}
 
 	public void exitBt_Click(Object sender, EventArgs e)
 	{
-		Application.Exit();
+		string msg = "ゲームを終了しますか？";
+		DialogResult result = MessageBox.Show(msg, "ゲーム終了", MessageBoxButtons.YesNo);
+		if(result == DialogResult.Yes)
+		{
+			Application.Exit();
+		}
 	}
 
 //=======================マウス================================
 	public void mouseClick(object sender, MouseEventArgs e) {
-        string msg = "タイトルへ戻りますか？";	// クライアント座標
+        string msg = "タイトルへ戻りますか？";
         if(e.Button == MouseButtons.Right)
         {
         	if(flag)

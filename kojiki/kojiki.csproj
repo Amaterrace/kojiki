@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="NAudio">
-      <HintPath>D:\Kohei\Documents\Visual Studio 2017\Projects\NAudio\NAudio\bin\Debug\NAudio.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\C#\NAudio-1.8.0-Release\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

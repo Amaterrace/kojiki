@@ -7,7 +7,6 @@ namespace kojiki
 {
     class Program : Form
     {
-        // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         // あひょ
         AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
         WaveOut waveOut = new WaveOut();

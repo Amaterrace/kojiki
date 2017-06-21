@@ -7,6 +7,8 @@ namespace kojiki
 {
     class Program : Form
     {
+        // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        // あひょ
         AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
         WaveOut waveOut = new WaveOut();
         private TrackBar tb;
@@ -53,10 +55,10 @@ namespace kojiki
             // マウスClick動作
             this.MouseClick += new MouseEventHandler(mouseClick);
 
-            DrawTitle();
+            TitleDraw();
         }
 
-        public void DrawTitle()
+        public void TitleDraw()
         {
             // 背景
             this.BackgroundImage = Image.FromFile("Asset/kojiki_memu_back.bmp");
@@ -120,7 +122,7 @@ namespace kojiki
                     if (result == DialogResult.Yes)
                     {
                         waveOut.Stop();
-                        DrawTitle();
+                        TitleDraw();
                     }
                 }
             }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using System.Drawing;
 using NAudio.Wave;
@@ -7,14 +7,15 @@ namespace kojiki
 {
     class Program : Form
     {
+        const int w = 800, h = 600;
+        const int buttonN = 3;  // ボタンの数
+        private float vol;
         AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
         WaveOut waveOut = new WaveOut();
+        Button[] bt = new Button[buttonN];
+        string[] buttonName = new string[buttonN] { "START", "CONFIG", "EXIT" };
         private TrackBar tb;
-        private Button startBt;
-        private Button exitBt;
-        private Button confBt;
         private bool flag;
-        const int w = 800, h = 600;
 
         public static void Main()
         {
@@ -29,29 +30,39 @@ namespace kojiki
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.Width = w; this.Height = h;
 
-            // ボタン作成
-            startBt = new Button();
-            exitBt = new Button();
-            confBt = new Button();
-            tb = new TrackBar();
-            startBt.Text = "START";
-            confBt.Text = "CONFIG";
-            exitBt.Text = "EXIT";
+            double x = 0.5 * (double)w - 50, y = 0.5 * (double)h - 25;
 
-            // ボタン表示
-            double x = 0.5 * w - 0.5 * startBt.Width, y = 0.5 * h - 0.5 * startBt.Height;
-            startBt.Location = new Point((int)x, (int)y);
-            confBt.Location = new Point((int)x, (int)(y + 2 * startBt.Height));
-            exitBt.Location = new Point((int)x, (int)(y + 4 * startBt.Height));
+            // ボタン作成
+            for (int i = 0; i < buttonN; i++)
+            {
+                bt[i] = new Button();
+                bt[i].Text = buttonName[i];
+                bt[i].Location = new Point((int)x, (int)(y + 2 * i * bt[0].Height));
+            }
 
             // ボタン動作
-            startBt.Click += new EventHandler(startBt_Click);
-            confBt.Click += new EventHandler(confBt_Click);
-            exitBt.Click += new EventHandler(exitBt_Click);
+            bt[0].Click += new EventHandler(startBt_Click);
+            bt[1].Click += new EventHandler(confBt_Click);
+            bt[2].Click += new EventHandler(exitBt_Click);
 
+            tb = new TrackBar();
+            tb.TickStyle = TickStyle.Both;
+            // 初期値を設定
+            tb.Value = 0;
+            vol = 0.1f;
+            // 最小値、最大値を設定
+            tb.Minimum = 0;
+            tb.Maximum = 100;
+            tb.Width = w / 3;
+            // 描画される目盛りの刻みを設定
+            tb.TickFrequency = 5;
+            tb.Location = new Point((int)x, (int)y);
 
             // マウスClick動作
             this.MouseClick += new MouseEventHandler(mouseClick);
+
+            // 値が変更された際のイベントハンドらーを追加
+            tb.ValueChanged += new EventHandler(tb_ValueChanged);
 
             TitleDraw();
         }
@@ -62,14 +73,13 @@ namespace kojiki
             this.BackgroundImage = Image.FromFile("Asset/kojiki_memu_back.bmp");
             reader.Position = 0;
             waveOut.Init(reader);
-            waveOut.Volume = 0.1f;
+            waveOut.Volume = vol;
             waveOut.Play();
 
             this.Controls.Remove(tb);
 
-            startBt.Parent = this;
-            confBt.Parent = this;
-            exitBt.Parent = this;
+            // ボタン表示
+            for (int i = 0; i < buttonN; i++) bt[i].Parent = this;
 
             flag = false;
         }
@@ -80,9 +90,7 @@ namespace kojiki
             this.BackgroundImage = Image.FromFile("Asset/ana.bmp");
 
             // ボタン消去
-            this.Controls.Remove(startBt);
-            this.Controls.Remove(confBt);
-            this.Controls.Remove(exitBt);
+            for (int i = 0; i < buttonN; i++) this.Controls.Remove(bt[i]);
 
             waveOut.Stop();
 
@@ -93,9 +101,7 @@ namespace kojiki
         {
             this.BackgroundImage = Image.FromFile("Asset/conf.bmp");
             // ボタン消去
-            this.Controls.Remove(startBt);
-            this.Controls.Remove(confBt);
-            this.Controls.Remove(exitBt);
+            for (int i = 0; i < buttonN; i++) this.Controls.Remove(bt[i]);
 
             tb.Parent = this;
 
@@ -124,6 +130,11 @@ namespace kojiki
                     }
                 }
             }
+        }
+
+        public void tb_ValueChanged(Object sender, EventArgs e)
+        {
+            vol = tb.Value / 100f;
         }
     }
 }

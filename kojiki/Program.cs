@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using System.Drawing;
 using NAudio.Wave;
@@ -7,8 +7,6 @@ namespace kojiki
 {
     class Program : Form
     {
-        // aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        // あひょ
         AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
         WaveOut waveOut = new WaveOut();
         private TrackBar tb;

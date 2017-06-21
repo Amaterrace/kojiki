@@ -64,10 +64,10 @@ namespace kojiki
             // 値が変更された際のイベントハンドらーを追加
             tb.ValueChanged += new EventHandler(tb_ValueChanged);
 
-            TitleDraw();
+            DrawTitle();
         }
 
-        public void TitleDraw()
+        public void DrawTitle()
         {
             // 背景
             this.BackgroundImage = Image.FromFile("Asset/kojiki_memu_back.bmp");
@@ -126,7 +126,7 @@ namespace kojiki
                     if (result == DialogResult.Yes)
                     {
                         waveOut.Stop();
-                        TitleDraw();
+                        DrawTitle();
                     }
                 }
             }

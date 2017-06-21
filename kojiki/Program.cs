@@ -15,6 +15,7 @@ namespace kojiki
         Button[] bt = new Button[buttonN];
         string[] buttonName = new string[buttonN] { "START", "CONFIG", "EXIT" };
         private TrackBar tb;
+        private Label[] lb = new Label[4];
         private bool flag;
 
         public static void Main()
@@ -38,12 +39,9 @@ namespace kojiki
                 bt[i] = new Button();
                 bt[i].Text = buttonName[i];
                 bt[i].Location = new Point((int)x, (int)(y + 2 * i * bt[0].Height));
-            }
 
-            // ボタン動作
-            bt[0].Click += new EventHandler(startBt_Click);
-            bt[1].Click += new EventHandler(confBt_Click);
-            bt[2].Click += new EventHandler(exitBt_Click);
+                bt[i].Click += new EventHandler(bt_Click);
+            }
 
             tb = new TrackBar();
             tb.TickStyle = TickStyle.Both;
@@ -56,12 +54,31 @@ namespace kojiki
             tb.Width = w / 3;
             // 描画される目盛りの刻みを設定
             tb.TickFrequency = 5;
-            tb.Location = new Point((int)x, (int)y);
+
+            int tbX, tbY;
+            tbX = (int)(this.Width / 10);
+            tbY = (int)(this.Height / 4);
+            tb.Location = new Point(tbX, tbY);
+
+            const int textSize = 30;
+            for (int i = 0; i < lb.Length; i++)
+            {
+                lb[i] = new Label();
+                lb[i].Width = textSize;
+            }
+            lb[0].Text = Convert.ToString(vol * 100);
+            lb[1].Text = "min";
+            lb[2].Text = "Max";
+            lb[3].Text = "音量";
+            lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
+            lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
+            lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
+            lb[3].Location = new Point(tbX - textSize, tbY);
 
             // マウスClick動作
             this.MouseClick += new MouseEventHandler(mouseClick);
 
-            // 値が変更された際のイベントハンドらーを追加
+            // 値が変更された際のイベントハンドラーを追加
             tb.ValueChanged += new EventHandler(tb_ValueChanged);
 
             DrawTitle();
@@ -85,33 +102,27 @@ namespace kojiki
         }
 
         //======================ボタン================================
-        public void startBt_Click(Object sender, EventArgs e)
+        public void bt_Click(Object sender, EventArgs e)
         {
-            this.BackgroundImage = Image.FromFile("Asset/ana.bmp");
-
-            // ボタン消去
             for (int i = 0; i < buttonN; i++) this.Controls.Remove(bt[i]);
 
-            waveOut.Stop();
-
-            flag = true;
-        }
-
-        public void confBt_Click(Object sender, EventArgs e)
-        {
-            this.BackgroundImage = Image.FromFile("Asset/conf.bmp");
-            // ボタン消去
-            for (int i = 0; i < buttonN; i++) this.Controls.Remove(bt[i]);
-
-            tb.Parent = this;
-
-            flag = true;
-
-        }
-
-        public void exitBt_Click(Object sender, EventArgs e)
-        {
-            Application.Exit();
+            if (sender == bt[0])  // startボタン
+            {
+                this.BackgroundImage = Image.FromFile("Asset/ana.bmp");
+                waveOut.Stop();
+                flag = true;
+            }
+            else if (sender == bt[1])  // configボタン
+            {
+                this.BackgroundImage = Image.FromFile("Asset/conf.bmp");
+                for (int j = 0; j < lb.Length; j++) lb[j].Parent = this;
+                tb.Parent = this;
+                flag = true;
+            }
+            else if (sender == bt[2])  // exitボタン
+            {
+                Application.Exit();
+            }
         }
 
         //=======================マウス================================
@@ -125,6 +136,7 @@ namespace kojiki
                     DialogResult result = MessageBox.Show(msg, "メニュー", MessageBoxButtons.YesNo);
                     if (result == DialogResult.Yes)
                     {
+                        for (int i = 0; i < lb.Length; i++) this.Controls.Remove(lb[i]);
                         waveOut.Stop();
                         DrawTitle();
                     }
@@ -132,9 +144,12 @@ namespace kojiki
             }
         }
 
+        //======================トラックバー=============================
         public void tb_ValueChanged(Object sender, EventArgs e)
         {
             vol = tb.Value / 100f;
+            waveOut.Volume = vol;
+            lb[0].Text = Convert.ToString(vol * 100);
         }
     }
 }

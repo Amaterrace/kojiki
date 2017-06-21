@@ -12,6 +12,7 @@ class Sample : Form
     private Button exitBt;
     private Button confBt;
     private bool flag;
+    const int w = 800, h = 600;
 
     public static void Main()
     {
@@ -21,7 +22,6 @@ class Sample : Form
     // コンストラクタ
     public Sample()
     {
-        const int w = 800, h = 600;
         this.Text = "古事記";
         // サイズ固定（最大化とかはできる）
         this.FormBorderStyle = FormBorderStyle.FixedSingle;

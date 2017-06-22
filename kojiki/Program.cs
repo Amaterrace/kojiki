@@ -101,6 +101,13 @@ namespace kojiki
             flag = false;
         }
 
+        public void DrawConfig()
+        {
+            this.BackgroundImage = Image.FromFile("Asset/conf.bmp");
+            for (int j = 0; j < lb.Length; j++) lb[j].Parent = this;
+            tb.Parent = this;
+        }
+
         //======================ボタン================================
         public void bt_Click(Object sender, EventArgs e)
         {
@@ -114,21 +121,24 @@ namespace kojiki
             }
             else if (sender == bt[1])  // configボタン
             {
-                this.BackgroundImage = Image.FromFile("Asset/conf.bmp");
-                for (int j = 0; j < lb.Length; j++) lb[j].Parent = this;
-                tb.Parent = this;
+                DrawConfig();
                 flag = true;
             }
             else if (sender == bt[2])  // exitボタン
             {
-                Application.Exit();
+                string msg = "ゲームを終了しますか？";
+                DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
+                {
+                    Application.Exit();
+                }
             }
         }
 
         //=======================マウス================================
         public void mouseClick(object sender, MouseEventArgs e)
         {
-            string msg = "タイトルへ戻りますか？"; // クライアント座標
+            string msg = "タイトルへ戻りますか？";
             if (e.Button == MouseButtons.Right)
             {
                 if (flag)

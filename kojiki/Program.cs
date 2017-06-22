@@ -132,6 +132,7 @@ namespace kojiki
                 {
                     Application.Exit();
                 }
+                else for (int i = 0; i < buttonN; i++) bt[i].Parent = this; // ボタン再表示
             }
         }
 

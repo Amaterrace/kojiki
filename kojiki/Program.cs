@@ -10,6 +10,8 @@ namespace kojiki
         const int w = 800, h = 600;
         const int buttonN = 3;  // ボタンの数
         private float vol;
+        private string file = "Asset/";
+        private string[] bgAddress = new string[3] { "kojiki_memu_back.bmp", "conf.bmp", "ana.bmp" };
         AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
         WaveOut waveOut = new WaveOut();
         Button[] bt = new Button[buttonN];
@@ -57,9 +59,8 @@ namespace kojiki
             for (int i = 0; i < buttonN; i++) panel[0].Controls.Add(bt[i]);
 
             // 背景配置
-            panel[0].BackgroundImage = Image.FromFile("Asset/kojiki_memu_back.bmp");
-            panel[1].BackgroundImage = Image.FromFile("Asset/conf.bmp");
-            panel[2].BackgroundImage = Image.FromFile("Asset/ana.bmp");
+            for (int i = 0; i < panel.Length; i++)
+                panel[i].BackgroundImage = Image.FromFile(file + bgAddress[i]);
 
             // トラックバー作成
             tb = new TrackBar();
@@ -118,25 +119,31 @@ namespace kojiki
             waveOut.Volume = vol;
             waveOut.Play();
 
-            panel[0].Visible = true;
-            panel[1].Visible = false;
-            panel[2].Visible = false;
+            for (int i = 0; i < panel.Length; i++)
+            {
+                if (i != 0) panel[i].Visible = false;
+                else panel[i].Visible = true;
+            }
         }
 
         public void DrawConfig()
         {
-            panel[0].Visible = false;
-            panel[1].Visible = true;
-            panel[2].Visible = false;
+            for (int i = 0; i < panel.Length; i++)
+            {
+                if (i != 1) panel[i].Visible = false;
+                else panel[i].Visible = true;
+            }
         }
 
         public void DrawGame()
         {
             waveOut.Stop();
-
-            panel[0].Visible = false;
-            panel[1].Visible = false;
-            panel[2].Visible = true;
+            
+            for (int i = 0; i < panel.Length; i++)
+            {
+                if (i != 2) panel[i].Visible = false;
+                else panel[i].Visible = true;
+            }
         }
 
         //======================ボタン================================

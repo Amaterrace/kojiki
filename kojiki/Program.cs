@@ -130,7 +130,6 @@ namespace kojiki
             }
             panel[gameNumber].MouseClick += new MouseEventHandler(textClick);
             text.MouseClick += new MouseEventHandler(textClick);
-            panel[gameNumber].KeyDown += new KeyEventHandler(OnKeyDownHandler);
             panel[gameNumber].Paint += new PaintEventHandler(pnl_Paint);
             panel[gameNumber].Controls.Add(text);
 
@@ -232,15 +231,6 @@ namespace kojiki
         public void textClick(Object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
-            {
-                clickCount++;
-                text.Text = ShowText(clickCount);
-            }
-        }
-
-        private void OnKeyDownHandler(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
             {
                 clickCount++;
                 text.Text = ShowText(clickCount);

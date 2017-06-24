@@ -186,7 +186,6 @@ namespace kojiki
 
             while ((line = sr.ReadLine()) != null)
             {
-                System.Console.WriteLine(line);
                 counter++;
                 if (n == counter) break;
             }

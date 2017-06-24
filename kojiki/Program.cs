@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.Drawing;
 using NAudio.Wave;
+using System.IO;
 
 namespace kojiki
 {
@@ -10,14 +11,32 @@ namespace kojiki
         const int w = 800, h = 600;
         const int buttonN = 3;  // ボタンの数
         private float vol;
+        private const int titleNumber = 0;
+        private const int configNumber = 1;
+        private const int gameNumber = 2;
+
+
+        // file pass + name
         private string file = "Asset/";
-        private string[] bgAddress = new string[3] { "kojiki_memu_back.bmp", "conf.bmp", "ana.bmp" };
-        AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
-        WaveOut waveOut = new WaveOut();
-        Button[] bt = new Button[buttonN];
-        string[] buttonName = new string[buttonN] { "START", "CONFIG", "EXIT" };
+        private string[] bgPass = new string[] { "kojiki_memu_back.bmp", "conf.bmp", "ana.bmp", "textbox600.png" };
+
+        // NAudio
+        private AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
+        private WaveOut waveOut = new WaveOut();
+
+        // ボタン+ボタンname
+        private Button[] bt = new Button[buttonN];
+        private string[] buttonName = new string[buttonN] { "START", "CONFIG", "EXIT" };
+
         private TrackBar tb;
         private Label[] lb = new Label[4];
+
+        // 本文
+        private string stext;
+        private Label text;
+        private int clickCount=1;
+
+        private Image im;
         private Panel[] panel = new Panel[3];
 
         public static void Main()
@@ -34,9 +53,6 @@ namespace kojiki
             this.Width = w; this.Height = h;
 
             // パネル作成
-            // panel[0] == タイトル画面
-            // panel[1] == コンフィグ画面
-            // panel[2] == ゲーム画面
             for (int i = 0; i < panel.Length; i++)
             {
                 panel[i] = new Panel();
@@ -60,7 +76,15 @@ namespace kojiki
 
             // 背景配置
             for (int i = 0; i < panel.Length; i++)
-                panel[i].BackgroundImage = Image.FromFile(file + bgAddress[i]);
+                panel[i].BackgroundImage = Image.FromFile(file + bgPass[i]);
+
+            // テキストボックス
+            im = Image.FromFile(file + bgPass[3]);
+
+            text = new Label();
+            text.Width = 530;  text.Height = 120;
+            text.Location = new Point(200, 420);
+            text.BackColor = Color.Transparent;
 
             // トラックバー作成
             tb = new TrackBar();
@@ -98,13 +122,17 @@ namespace kojiki
             lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
             lb[3].Location = new Point(tbX - textSize, tbY);
             for (int j = 0; j < lb.Length; j++) panel[1].Controls.Add(lb[j]);
-
-
+            
             // マウスClick動作
             for (int i = 1; i < panel.Length; i++)
             {
                 panel[i].MouseClick += new MouseEventHandler(mouseClick);
             }
+            panel[gameNumber].MouseClick += new MouseEventHandler(textClick);
+            text.MouseClick += new MouseEventHandler(textClick);
+            panel[gameNumber].KeyDown += new KeyEventHandler(OnKeyDownHandler);
+            panel[gameNumber].Paint += new PaintEventHandler(pnl_Paint);
+            panel[gameNumber].Controls.Add(text);
 
             // 値が変更された際のイベントハンドラーを追加
             tb.ValueChanged += new EventHandler(tb_ValueChanged);
@@ -121,7 +149,7 @@ namespace kojiki
 
             for (int i = 0; i < panel.Length; i++)
             {
-                if (i != 0) panel[i].Visible = false;
+                if (i != titleNumber) panel[i].Visible = false;
                 else panel[i].Visible = true;
             }
         }
@@ -130,10 +158,11 @@ namespace kojiki
         {
             for (int i = 0; i < panel.Length; i++)
             {
-                if (i != 1) panel[i].Visible = false;
+                if (i != configNumber) panel[i].Visible = false;
                 else panel[i].Visible = true;
             }
         }
+        
 
         public void DrawGame()
         {
@@ -141,9 +170,27 @@ namespace kojiki
             
             for (int i = 0; i < panel.Length; i++)
             {
-                if (i != 2) panel[i].Visible = false;
+                if (i != gameNumber) panel[i].Visible = false;
                 else panel[i].Visible = true;
             }
+            text.Text = ShowText(clickCount);
+            
+        }
+
+        public string ShowText(int n)
+        {
+            StreamReader sr = new StreamReader("test.txt", System.Text.Encoding.Default);
+            stext = sr.ToString();
+            int counter=0;
+            string line;
+
+            while ((line = sr.ReadLine()) != null)
+            {
+                System.Console.WriteLine(line);
+                counter++;
+                if (n == counter) break;
+            }
+            return line;
         }
 
         //======================ボタン================================
@@ -183,12 +230,42 @@ namespace kojiki
             }
         }
 
+        public void textClick(Object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                clickCount++;
+                text.Text = ShowText(clickCount);
+            }
+        }
+
+        private void OnKeyDownHandler(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                clickCount++;
+                text.Text = ShowText(clickCount);
+            }
+        }
+
         //======================トラックバー=============================
         public void tb_ValueChanged(Object sender, EventArgs e)
         {
             vol = tb.Value / 100f;
             waveOut.Volume = vol;
             lb[0].Text = Convert.ToString(vol * 100);
+        }
+
+        //========================ペイント==================================
+        public void pnl_Paint(Object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            double p = 0.94;
+            double pX, pY;
+
+            pX = im.Width * p;
+            pY = im.Height * p;
+            g.DrawImage(im, 15, 0, (int)pX, (int)pY);
         }
     }
 }

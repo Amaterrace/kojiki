@@ -16,7 +16,7 @@ namespace kojiki
         string[] buttonName = new string[buttonN] { "START", "CONFIG", "EXIT" };
         private TrackBar tb;
         private Label[] lb = new Label[4];
-        private bool flag;
+        private Panel[] panel = new Panel[3];
 
         public static void Main()
         {
@@ -31,6 +31,17 @@ namespace kojiki
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.Width = w; this.Height = h;
 
+            // パネル作成
+            // panel[0] == タイトル画面
+            // panel[1] == コンフィグ画面
+            // panel[2] == ゲーム画面
+            for (int i = 0; i < panel.Length; i++)
+            {
+                panel[i] = new Panel();
+                panel[i].Dock = DockStyle.Fill;
+                this.Controls.Add(panel[i]);
+            }
+
             double x = 0.5 * (double)w - 50, y = 0.5 * (double)h - 25;
 
             // ボタン作成
@@ -42,7 +53,15 @@ namespace kojiki
 
                 bt[i].Click += new EventHandler(bt_Click);
             }
+            // ボタン配置
+            for (int i = 0; i < buttonN; i++) panel[0].Controls.Add(bt[i]);
 
+            // 背景配置
+            panel[0].BackgroundImage = Image.FromFile("Asset/kojiki_memu_back.bmp");
+            panel[1].BackgroundImage = Image.FromFile("Asset/conf.bmp");
+            panel[2].BackgroundImage = Image.FromFile("Asset/ana.bmp");
+
+            // トラックバー作成
             tb = new TrackBar();
             tb.TickStyle = TickStyle.Both;
             // 初期値を設定
@@ -55,11 +74,14 @@ namespace kojiki
             // 描画される目盛りの刻みを設定
             tb.TickFrequency = 5;
 
+            // トラックバー配置
             int tbX, tbY;
             tbX = (int)(this.Width / 10);
             tbY = (int)(this.Height / 4);
             tb.Location = new Point(tbX, tbY);
+            panel[1].Controls.Add(tb);
 
+            // ラベル作成
             const int textSize = 30;
             for (int i = 0; i < lb.Length; i++)
             {
@@ -74,9 +96,14 @@ namespace kojiki
             lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
             lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
             lb[3].Location = new Point(tbX - textSize, tbY);
+            for (int j = 0; j < lb.Length; j++) panel[1].Controls.Add(lb[j]);
+
 
             // マウスClick動作
-            this.MouseClick += new MouseEventHandler(mouseClick);
+            for (int i = 1; i < panel.Length; i++)
+            {
+                panel[i].MouseClick += new MouseEventHandler(mouseClick);
+            }
 
             // 値が変更された際のイベントハンドラーを追加
             tb.ValueChanged += new EventHandler(tb_ValueChanged);
@@ -86,43 +113,42 @@ namespace kojiki
 
         public void DrawTitle()
         {
-            // 背景
-            this.BackgroundImage = Image.FromFile("Asset/kojiki_memu_back.bmp");
             reader.Position = 0;
             waveOut.Init(reader);
             waveOut.Volume = vol;
             waveOut.Play();
 
-            this.Controls.Remove(tb);
-
-            // ボタン表示
-            for (int i = 0; i < buttonN; i++) bt[i].Parent = this;
-
-            flag = false;
+            panel[0].Visible = true;
+            panel[1].Visible = false;
+            panel[2].Visible = false;
         }
 
         public void DrawConfig()
         {
-            this.BackgroundImage = Image.FromFile("Asset/conf.bmp");
-            for (int j = 0; j < lb.Length; j++) lb[j].Parent = this;
-            tb.Parent = this;
+            panel[0].Visible = false;
+            panel[1].Visible = true;
+            panel[2].Visible = false;
+        }
+
+        public void DrawGame()
+        {
+            waveOut.Stop();
+
+            panel[0].Visible = false;
+            panel[1].Visible = false;
+            panel[2].Visible = true;
         }
 
         //======================ボタン================================
         public void bt_Click(Object sender, EventArgs e)
         {
-            for (int i = 0; i < buttonN; i++) this.Controls.Remove(bt[i]);
-
             if (sender == bt[0])  // startボタン
             {
-                this.BackgroundImage = Image.FromFile("Asset/ana.bmp");
-                waveOut.Stop();
-                flag = true;
+                DrawGame();
             }
             else if (sender == bt[1])  // configボタン
             {
                 DrawConfig();
-                flag = true;
             }
             else if (sender == bt[2])  // exitボタン
             {
@@ -132,7 +158,6 @@ namespace kojiki
                 {
                     Application.Exit();
                 }
-                else for (int i = 0; i < buttonN; i++) bt[i].Parent = this; // ボタン再表示
             }
         }
 
@@ -142,16 +167,12 @@ namespace kojiki
             string msg = "タイトルへ戻りますか？";
             if (e.Button == MouseButtons.Right)
             {
-                if (flag)
-                {
                     DialogResult result = MessageBox.Show(msg, "メニュー", MessageBoxButtons.YesNo);
                     if (result == DialogResult.Yes)
                     {
-                        for (int i = 0; i < lb.Length; i++) this.Controls.Remove(lb[i]);
                         waveOut.Stop();
                         DrawTitle();
                     }
-                }
             }
         }
 

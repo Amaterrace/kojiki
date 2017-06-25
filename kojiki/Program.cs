@@ -32,7 +32,6 @@ namespace kojiki
         private Label[] lb = new Label[4];
 
         // 本文
-        private string stext;
         private Label text;
         private int clickCount=1;
 
@@ -179,7 +178,6 @@ namespace kojiki
         public string ShowText(int n)
         {
             StreamReader sr = new StreamReader("test.txt", System.Text.Encoding.Default);
-            stext = sr.ToString();
             int counter=0;
             string line;
 

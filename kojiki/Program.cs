@@ -18,7 +18,8 @@ namespace kojiki
 
         // file pass + name
         private string file = "Asset/";
-        private string[] bgPass = new string[] { "kojiki_memu_back.bmp", "conf.bmp", "ana.bmp", "textbox600.png" };
+        private string[] bgPass = new string[]
+         { "kojiki_memu_back.bmp", "conf.bmp", "ana.bmp", "textbox.png" };
 
         // NAudio
         private AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
@@ -26,14 +27,22 @@ namespace kojiki
 
         // ボタン+ボタンname
         private Button[] bt = new Button[buttonN];
-        private string[] buttonName = new string[buttonN] { "START", "CONFIG", "EXIT" };
+        private string[] buttonName = new string[buttonN]
+         { "START", "CONFIG", "EXIT" };
 
         private TrackBar tb;
         private Label[] lb = new Label[4];
 
         // 本文
         private Label text;
-        private int clickCount=1;
+        private Timer timer;
+        private int clickCount = 1;
+        private int nextChar = 0;
+        private int textSpeed = 50; //[ms]
+        private int textFontSize = 12;  // フォントサイズ[pt]
+        private string[] font = new string[]
+            {"Arial", "ＭＳ Ｐ明朝", "ＭＳ Ｐゴシック"};
+        private string stext;
 
         private Image im;
         private Panel[] panel = new Panel[3];
@@ -46,6 +55,8 @@ namespace kojiki
         // コンストラクタ
         public Program()
         {
+            //フォームのアイコンを設定する
+            this.Icon = new System.Drawing.Icon(file + "kojiki_icon3.ico");
             this.Text = "古事記";
             // サイズ固定（最大化とかはできる）
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -81,9 +92,11 @@ namespace kojiki
             im = Image.FromFile(file + bgPass[3]);
 
             text = new Label();
-            text.Width = 530;  text.Height = 120;
+            text.Width = 530; text.Height = 120;
             text.Location = new Point(200, 420);
             text.BackColor = Color.Transparent;
+            // フォントサイズを指定
+            text.Font = new Font(font[1], textFontSize);
 
             // トラックバー作成
             tb = new TrackBar();
@@ -121,7 +134,7 @@ namespace kojiki
             lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
             lb[3].Location = new Point(tbX - textSize, tbY);
             for (int j = 0; j < lb.Length; j++) panel[1].Controls.Add(lb[j]);
-            
+
             // マウスClick動作
             for (int i = 1; i < panel.Length; i++)
             {
@@ -160,25 +173,28 @@ namespace kojiki
                 else panel[i].Visible = true;
             }
         }
-        
+
 
         public void DrawGame()
         {
             waveOut.Stop();
-            
+
             for (int i = 0; i < panel.Length; i++)
             {
                 if (i != gameNumber) panel[i].Visible = false;
                 else panel[i].Visible = true;
             }
-            text.Text = ShowText(clickCount);
-            
+
+            stext = ShowText(clickCount);
+            timer = new Timer();
+            // タイマーセットアップ&起動
+            InitializeTimer();
         }
 
         public string ShowText(int n)
         {
-            StreamReader sr = new StreamReader("test.txt", System.Text.Encoding.Default);
-            int counter=0;
+            StreamReader sr = new StreamReader(file + "test.txt", System.Text.Encoding.Default);
+            int counter = 0;
             string line;
 
             while ((line = sr.ReadLine()) != null)
@@ -187,6 +203,27 @@ namespace kojiki
                 if (n == counter) break;
             }
             return line;
+        }
+
+        //====================タイマー==============================
+        private void InitializeTimer()
+        {
+            timer.Interval = textSpeed;
+            timer.Enabled = true;
+            timer.Tick += new EventHandler(timer_Tick);
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            if (nextChar == stext.Length)
+            {
+                timer.Enabled = false;
+            }
+            else
+            {
+                text.Text += stext[nextChar];
+                nextChar++;
+            }
         }
 
         //======================ボタン================================
@@ -217,12 +254,13 @@ namespace kojiki
             string msg = "タイトルへ戻りますか？";
             if (e.Button == MouseButtons.Right)
             {
-                    DialogResult result = MessageBox.Show(msg, "メニュー", MessageBoxButtons.YesNo);
-                    if (result == DialogResult.Yes)
-                    {
-                        waveOut.Stop();
-                        DrawTitle();
-                    }
+                DialogResult result = MessageBox.Show(msg, "メニュー", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
+                {
+                    waveOut.Stop();
+                    DrawTitle();
+                    timer.Enabled = false;
+                }
             }
         }
 
@@ -230,8 +268,19 @@ namespace kojiki
         {
             if (e.Button == MouseButtons.Left)
             {
-                clickCount++;
-                text.Text = ShowText(clickCount);
+                if (timer.Enabled)
+                {
+                    text.Text = stext;
+                    timer.Enabled = false;
+                }
+                else
+                {
+                    clickCount++;
+                    text.ResetText();
+                    stext = ShowText(clickCount);
+                    nextChar = 0;
+                    timer.Enabled = true;
+                }
             }
         }
 

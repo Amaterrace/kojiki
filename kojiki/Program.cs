@@ -9,29 +9,55 @@ namespace kojiki
     class Program : Form
     {
         const int w = 800, h = 600;
-        const int buttonN = 3;  // ボタンの数
-        private float vol;
+
+        const int buttonN = 4;  // ボタンの数
+        private Panel[] panel = new Panel[buttonN];
         private const int titleNumber = 0;
         private const int configNumber = 1;
-        private const int gameNumber = 2;
-
-
-        // file pass + name
-        private string file = "Asset/";
-        private string[] bgPass = new string[]
-         { "kojiki_memu_back.bmp", "conf.bmp", "ana.bmp", "textbox.png" };
-
-        // NAudio
-        private AudioFileReader reader = new AudioFileReader("Asset/title_kari.wav");
-        private WaveOut waveOut = new WaveOut();
+        private const int listNumber = 2;
+        private const int gameNumber = 3;
 
         // ボタン+ボタンname
         private Button[] bt = new Button[buttonN];
         private string[] buttonName = new string[buttonN]
-         { "START", "CONFIG", "EXIT" };
+         { "START", "CONFIG", "SOUNDS-LIST-", "EXIT" };
 
+        // file pass + name
+        private string file = "Asset/";
+        private string[] bgPass = new string[]
+         { "kojiki_memu_back.bmp", "conf.bmp", "souns_list.bmp", "ana.bmp" };
+        private string txbPass = "textbox.png";
+
+        // NAudio
+        private AudioFileReader opening = new AudioFileReader(
+                            @"Asset\BGM\serious\01.丘へ続く道2.bgm");
+        private AudioFileReader reader;
+        private LoopStream loop;   // class-LoopStream内の型
+        private WaveOut waveOut = new WaveOut();
+
+        const int numFile = 4;  // BGM内のファイル数
+        private string name;
+        private string[][] fileName =
+        {
+            Directory.GetFiles(
+            @"Asset\BGM\battle", "*.bgm"),
+            Directory.GetFiles(
+            @"Asset\BGM\easy_going", "*.bgm"),
+            Directory.GetFiles(
+            @"Asset\BGM\quiet", "*.bgm"),
+            Directory.GetFiles(
+            @"Asset\BGM\serious", "*.bgm")
+        };
+
+        const int listBtWidth = 36;
+        private Button[] listBt = new Button[30];
+        private Button listStopBt;
+        private Label[] listLb = new Label[5];
+
+        private float vol = 0.1f;  // 初期値
         private TrackBar tb;
         private Label[] lb = new Label[4];
+        private string[] tbStr = new string[] { "min", "Max", "音量" };
 
         // 本文
         private Label text;
@@ -45,7 +71,6 @@ namespace kojiki
         private string stext;
 
         private Image im;
-        private Panel[] panel = new Panel[3];
 
         public static void Main()
         {
@@ -56,7 +81,7 @@ namespace kojiki
         public Program()
         {
             //フォームのアイコンを設定する
-            this.Icon = new System.Drawing.Icon(file + "kojiki_icon3.ico");
+            this.Icon = new System.Drawing.Icon(file + "kojiki_icon4.ico");
             this.Text = "古事記";
             // サイズ固定（最大化とかはできる）
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -67,8 +92,13 @@ namespace kojiki
             {
                 panel[i] = new Panel();
                 panel[i].Dock = DockStyle.Fill;
+                panel[i].Visible = false;
                 this.Controls.Add(panel[i]);
             }
+
+            tb = new TrackBar();
+            // 値が変更された際のイベントハンドラーを追加
+            tb.ValueChanged += new EventHandler(tb_ValueChanged);
 
             double x = 0.5 * (double)w - 50, y = 0.5 * (double)h - 25;
 
@@ -77,6 +107,7 @@ namespace kojiki
             {
                 bt[i] = new Button();
                 bt[i].Text = buttonName[i];
+                bt[i].Width = 100;
                 bt[i].Location = new Point((int)x, (int)(y + 2 * i * bt[0].Height));
 
                 bt[i].Click += new EventHandler(bt_Click);
@@ -89,7 +120,7 @@ namespace kojiki
                 panel[i].BackgroundImage = Image.FromFile(file + bgPass[i]);
 
             // テキストボックス
-            im = Image.FromFile(file + bgPass[3]);
+            im = Image.FromFile(file + txbPass);
 
             text = new Label();
             text.Width = 530; text.Height = 120;
@@ -97,43 +128,6 @@ namespace kojiki
             text.BackColor = Color.Transparent;
             // フォントサイズを指定
             text.Font = new Font(font[1], textFontSize);
-
-            // トラックバー作成
-            tb = new TrackBar();
-            tb.TickStyle = TickStyle.Both;
-            // 初期値を設定
-            tb.Value = 0;
-            vol = 0.1f;
-            // 最小値、最大値を設定
-            tb.Minimum = 0;
-            tb.Maximum = 100;
-            tb.Width = w / 3;
-            // 描画される目盛りの刻みを設定
-            tb.TickFrequency = 5;
-
-            // トラックバー配置
-            int tbX, tbY;
-            tbX = (int)(this.Width / 10);
-            tbY = (int)(this.Height / 4);
-            tb.Location = new Point(tbX, tbY);
-            panel[1].Controls.Add(tb);
-
-            // ラベル作成
-            const int textSize = 30;
-            for (int i = 0; i < lb.Length; i++)
-            {
-                lb[i] = new Label();
-                lb[i].Width = textSize;
-            }
-            lb[0].Text = Convert.ToString(vol * 100);
-            lb[1].Text = "min";
-            lb[2].Text = "Max";
-            lb[3].Text = "音量";
-            lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
-            lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
-            lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
-            lb[3].Location = new Point(tbX - textSize, tbY);
-            for (int j = 0; j < lb.Length; j++) panel[1].Controls.Add(lb[j]);
 
             // マウスClick動作
             for (int i = 1; i < panel.Length; i++)
@@ -145,55 +139,81 @@ namespace kojiki
             panel[gameNumber].Paint += new PaintEventHandler(pnl_Paint);
             panel[gameNumber].Controls.Add(text);
 
-            // 値が変更された際のイベントハンドラーを追加
-            tb.ValueChanged += new EventHandler(tb_ValueChanged);
+            SetSoundsList();
 
+            timer = new Timer();
+            timer.Enabled = false;
             DrawTitle();
+        }
+
+        public void SetSoundsList()
+        {
+            int k = 0, l = 0;
+            for (int i = 0; i < numFile; i++)
+            {
+                for (int j = 0; j < fileName[i].Length; j++)
+                {
+                    k++; l++;
+                    listBt[k] = new Button();
+                    listBt[k].Text = ">" + k.ToString();
+                    listBt[k].Width = listBtWidth;
+                    listBt[k].Location = new Point(i * 200, j * 30 + 5);
+                    panel[listNumber].Controls.Add(listBt[k]);
+                    listBt[k].Click += new EventHandler(ListBt_Click);
+
+                    listLb[i] = new Label();
+                    name = Path.GetFileName(fileName[i][j]).Replace
+                                                ("0" + l.ToString() + ".", "");
+                    listLb[i].Text = name.Replace(".bgm", "");
+                    listLb[i].Width = 200 - listBtWidth;
+                    listLb[i].Location = new Point(i * 200 + listBtWidth, j * 30 + 5);
+                    listLb[i].BackColor = Color.Transparent;
+                    listLb[i].ForeColor = Color.White;
+                    panel[listNumber].Controls.Add(listLb[i]);
+                }
+                l = 0;
+            }
+
+            listStopBt = new Button();
+            listStopBt.Text = "■";
+            listStopBt.Width = listBtWidth;
+            listStopBt.Location = new Point(w - 100, h - 100);
+            panel[listNumber].Controls.Add(listStopBt);
+            listStopBt.Click += new EventHandler(stopBt_Cilck);
+        }
+
+        //=====================描画関数==================================
+        public void DrawPage(int pageNumber)
+        {
+            for (int i = 0; i < panel.Length; i++)
+            {
+                if (i != pageNumber) panel[i].Visible = false;
+                else panel[i].Visible = true;
+            }
         }
 
         public void DrawTitle()
         {
-            reader.Position = 0;
-            waveOut.Init(reader);
-            waveOut.Volume = vol;
-            waveOut.Play();
+            loop = new LoopStream(opening);
+            play(loop);
 
-            for (int i = 0; i < panel.Length; i++)
-            {
-                if (i != titleNumber) panel[i].Visible = false;
-                else panel[i].Visible = true;
-            }
+            DrawPage(titleNumber);
         }
-
-        public void DrawConfig()
-        {
-            for (int i = 0; i < panel.Length; i++)
-            {
-                if (i != configNumber) panel[i].Visible = false;
-                else panel[i].Visible = true;
-            }
-        }
-
 
         public void DrawGame()
         {
             waveOut.Stop();
 
-            for (int i = 0; i < panel.Length; i++)
-            {
-                if (i != gameNumber) panel[i].Visible = false;
-                else panel[i].Visible = true;
-            }
+            DrawPage(gameNumber);
 
             stext = ShowText(clickCount);
-            timer = new Timer();
             // タイマーセットアップ&起動
             InitializeTimer();
         }
 
         public string ShowText(int n)
         {
-            StreamReader sr = new StreamReader(file + "test.txt", System.Text.Encoding.Default);
+            StreamReader sr = new StreamReader("test.txt", System.Text.Encoding.Default);
             int counter = 0;
             string line;
 
@@ -215,10 +235,7 @@ namespace kojiki
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if (nextChar == stext.Length)
-            {
-                timer.Enabled = false;
-            }
+            if (nextChar == stext.Length) timer.Enabled = false;
             else
             {
                 text.Text += stext[nextChar];
@@ -229,23 +246,56 @@ namespace kojiki
         //======================ボタン================================
         public void bt_Click(Object sender, EventArgs e)
         {
-            if (sender == bt[0])  // startボタン
+            switch (((Button)sender).Text)
             {
-                DrawGame();
+                case "START": DrawGame(); break;
+                case "CONFIG": DrawPage(configNumber); break;
+                case "SOUNDS-LIST-": DrawPage(listNumber); break;
+                case "EXIT":
+                    string msg = "ゲームを終了しますか？";
+                    DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes)
+                    {
+                        Application.Exit();
+                    }
+                    break;
+                default: break;
             }
-            else if (sender == bt[1])  // configボタン
+
+            if (panel[configNumber].Visible)
+                // newTrackBar(int 置くパネルNo, double x(横幅の比), double y(高さの比))
+                newTrackBar(configNumber, 0.1, 0.15);
+            else if (panel[listNumber].Visible)
+                newTrackBar(listNumber, 0.1, 0.8);
+        }
+
+        public void ListBt_Click(Object sender, EventArgs e)
+        {
+            string btString = ((System.Windows.Forms.Button)sender).Text;
+            string btNum = btString.Replace(">", "");
+
+
+            int k = 0;
+            for (int i = 0; i < numFile; i++)
             {
-                DrawConfig();
-            }
-            else if (sender == bt[2])  // exitボタン
-            {
-                string msg = "ゲームを終了しますか？";
-                DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
-                if (result == DialogResult.Yes)
+                for (int j = 0; j < fileName[i].Length; j++)
                 {
-                    Application.Exit();
+                    k++;
+                    if (k == int.Parse(btNum))
+                    {
+                        waveOut.Stop();
+                        reader = new AudioFileReader(@fileName[i][j]);
+                        loop = new LoopStream(reader);
+                        play(loop);
+                        break;
+                    }
                 }
             }
+        }
+
+        public void stopBt_Cilck(Object sender, EventArgs e)
+        {
+            waveOut.Stop();
         }
 
         //=======================マウス================================
@@ -259,7 +309,7 @@ namespace kojiki
                 {
                     waveOut.Stop();
                     DrawTitle();
-                    timer.Enabled = false;
+                    if (timer.Enabled) timer.Enabled = false;
                 }
             }
         }
@@ -285,6 +335,39 @@ namespace kojiki
         }
 
         //======================トラックバー=============================
+        public void newTrackBar(int OnPanel, double x, double y)
+        {
+            tb.TickStyle = TickStyle.Both;
+            // 最小値、最大値を設定
+            tb.Minimum = 0;
+            tb.Maximum = 100;
+            tb.Width = w / 3;
+            // 描画される目盛りの刻みを設定
+            tb.TickFrequency = 5;
+
+            // トラックバー配置
+            int tbX, tbY;
+            tbX = (int)(this.Width * x);
+            tbY = (int)(this.Height * y);
+            tb.Location = new Point(tbX, tbY);
+            panel[OnPanel].Controls.Add(tb);
+
+            // ラベル作成
+            const int textSize = 30;
+            for (int i = 0; i < lb.Length; i++)
+            {
+                lb[i] = new Label();
+                lb[i].Width = textSize;
+                if (i == 0) lb[i].Text = Convert.ToString(vol * 100);
+                else lb[i].Text = tbStr[i - 1];
+            }
+            lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
+            lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
+            lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
+            lb[3].Location = new Point(tbX - textSize, tbY);
+            for (int j = 0; j < lb.Length; j++) panel[OnPanel].Controls.Add(lb[j]);
+        }
+
         public void tb_ValueChanged(Object sender, EventArgs e)
         {
             vol = tb.Value / 100f;
@@ -303,5 +386,64 @@ namespace kojiki
             pY = im.Height * p;
             g.DrawImage(im, 15, 0, (int)pX, (int)pY);
         }
+
+        public void play(LoopStream loop)
+        {
+            loop.Position = 0;
+            waveOut.Init(loop);
+            waveOut.Volume = vol;
+            waveOut.Play();
+        }
+    }
+}
+
+public class LoopStream : WaveStream
+{
+    WaveStream sourceStream;
+
+    public LoopStream(WaveStream sourceStream)
+    {
+        this.sourceStream = sourceStream;
+        this.EnableLooping = true;
+    }
+
+    public bool EnableLooping { get; set; }
+
+    public override WaveFormat WaveFormat
+    {
+        get { return sourceStream.WaveFormat; }
+    }
+
+    public override long Length
+    {
+        get { return sourceStream.Length; }
+    }
+
+    public override long Position
+    {
+        get { return sourceStream.Position; }
+        set { sourceStream.Position = value; }
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        int totalBytesRead = 0;
+
+        while (totalBytesRead < count)
+        {
+            int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
+            if (bytesRead == 0)
+            {
+                if (sourceStream.Position == 0 || !EnableLooping)
+                {
+                    // something wrong with the source stream
+                    break;
+                }
+                // loop
+                sourceStream.Position = 0;
+            }
+            totalBytesRead += bytesRead;
+        }
+        return totalBytesRead;
     }
 }

@@ -111,9 +111,10 @@ namespace kojiki
                 bt[i].Location = new Point((int)x, (int)(y + 2 * i * bt[0].Height));
 
                 bt[i].Click += new EventHandler(bt_Click);
+
+                // ボタン配置
+                panel[0].Controls.Add(bt[i]);
             }
-            // ボタン配置
-            for (int i = 0; i < buttonN; i++) panel[0].Controls.Add(bt[i]);
 
             // 背景配置
             for (int i = 0; i < panel.Length; i++)
@@ -122,12 +123,14 @@ namespace kojiki
             // テキストボックス
             im = Image.FromFile(file + txbPass);
 
+            // Game画面のテキスト作成
             text = new Label();
             text.Width = 530; text.Height = 120;
             text.Location = new Point(200, 420);
             text.BackColor = Color.Transparent;
             // フォントサイズを指定
             text.Font = new Font(font[1], textFontSize);
+            panel[gameNumber].Controls.Add(text);
 
             // マウスClick動作
             for (int i = 1; i < panel.Length; i++)
@@ -137,7 +140,6 @@ namespace kojiki
             panel[gameNumber].MouseClick += new MouseEventHandler(textClick);
             text.MouseClick += new MouseEventHandler(textClick);
             panel[gameNumber].Paint += new PaintEventHandler(pnl_Paint);
-            panel[gameNumber].Controls.Add(text);
 
             SetSoundsList();
 
@@ -248,9 +250,15 @@ namespace kojiki
         {
             switch (((Button)sender).Text)
             {
-                case "START": DrawGame(); break;
-                case "CONFIG": DrawPage(configNumber); break;
-                case "SOUNDS-LIST-": DrawPage(listNumber); break;
+                case "START":
+                    DrawGame();
+                    break;
+                case "CONFIG":
+                    DrawPage(configNumber);
+                    break;
+                case "SOUNDS-LIST-":
+                    DrawPage(listNumber);
+                    break;
                 case "EXIT":
                     string msg = "ゲームを終了しますか？";
                     DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
@@ -273,7 +281,6 @@ namespace kojiki
         {
             string btString = ((System.Windows.Forms.Button)sender).Text;
             string btNum = btString.Replace(">", "");
-
 
             int k = 0;
             for (int i = 0; i < numFile; i++)

@@ -27,6 +27,7 @@ namespace kojiki
         private string[] bgPass = new string[]
          { "kojiki_memu_back.bmp", "conf.bmp", "souns_list.bmp", "ana.bmp" };
         private string txbPass = "textbox.png";
+        private string framePass = "frame.png";
 
         // NAudio
         private AudioFileReader opening = new AudioFileReader(
@@ -71,6 +72,7 @@ namespace kojiki
         private string stext;
 
         private Image im;
+        private Image frame;
 
         public static void Main()
         {
@@ -111,23 +113,29 @@ namespace kojiki
                 bt[i].Location = new Point((int)x, (int)(y + 2 * i * bt[0].Height));
 
                 bt[i].Click += new EventHandler(bt_Click);
+
+                // ボタン配置
+                panel[0].Controls.Add(bt[i]);
             }
-            // ボタン配置
-            for (int i = 0; i < buttonN; i++) panel[0].Controls.Add(bt[i]);
 
             // 背景配置
             for (int i = 0; i < panel.Length; i++)
                 panel[i].BackgroundImage = Image.FromFile(file + bgPass[i]);
 
+            // 背景枠
+            frame = Image.FromFile(file + framePass);
+
             // テキストボックス
             im = Image.FromFile(file + txbPass);
 
+            // Game画面のテキスト作成
             text = new Label();
             text.Width = 530; text.Height = 120;
             text.Location = new Point(200, 420);
             text.BackColor = Color.Transparent;
             // フォントサイズを指定
             text.Font = new Font(font[1], textFontSize);
+            panel[gameNumber].Controls.Add(text);
 
             // マウスClick動作
             for (int i = 1; i < panel.Length; i++)
@@ -137,7 +145,8 @@ namespace kojiki
             panel[gameNumber].MouseClick += new MouseEventHandler(textClick);
             text.MouseClick += new MouseEventHandler(textClick);
             panel[gameNumber].Paint += new PaintEventHandler(pnl_Paint);
-            panel[gameNumber].Controls.Add(text);
+            panel[configNumber].Paint += new PaintEventHandler(frame_Paint);
+            panel[listNumber].Paint += new PaintEventHandler(frame_Paint);
 
             SetSoundsList();
 
@@ -248,9 +257,15 @@ namespace kojiki
         {
             switch (((Button)sender).Text)
             {
-                case "START": DrawGame(); break;
-                case "CONFIG": DrawPage(configNumber); break;
-                case "SOUNDS-LIST-": DrawPage(listNumber); break;
+                case "START":
+                    DrawGame();
+                    break;
+                case "CONFIG":
+                    DrawPage(configNumber);
+                    break;
+                case "SOUNDS-LIST-":
+                    DrawPage(listNumber);
+                    break;
                 case "EXIT":
                     string msg = "ゲームを終了しますか？";
                     DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
@@ -273,7 +288,6 @@ namespace kojiki
         {
             string btString = ((System.Windows.Forms.Button)sender).Text;
             string btNum = btString.Replace(">", "");
-
 
             int k = 0;
             for (int i = 0; i < numFile; i++)
@@ -360,6 +374,8 @@ namespace kojiki
                 lb[i].Width = textSize;
                 if (i == 0) lb[i].Text = Convert.ToString(vol * 100);
                 else lb[i].Text = tbStr[i - 1];
+                lb[i].ForeColor = Color.White;
+                lb[i].BackColor = Color.Transparent;
             }
             lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
             lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
@@ -387,6 +403,13 @@ namespace kojiki
             g.DrawImage(im, 15, 0, (int)pX, (int)pY);
         }
 
+        public void frame_Paint(Object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            
+            g.DrawImage(frame, 0, 0, 780, 560);
+        }
+
         public void play(LoopStream loop)
         {
             loop.Position = 0;
@@ -394,56 +417,5 @@ namespace kojiki
             waveOut.Volume = vol;
             waveOut.Play();
         }
-    }
-}
-
-public class LoopStream : WaveStream
-{
-    WaveStream sourceStream;
-
-    public LoopStream(WaveStream sourceStream)
-    {
-        this.sourceStream = sourceStream;
-        this.EnableLooping = true;
-    }
-
-    public bool EnableLooping { get; set; }
-
-    public override WaveFormat WaveFormat
-    {
-        get { return sourceStream.WaveFormat; }
-    }
-
-    public override long Length
-    {
-        get { return sourceStream.Length; }
-    }
-
-    public override long Position
-    {
-        get { return sourceStream.Position; }
-        set { sourceStream.Position = value; }
-    }
-
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-        int totalBytesRead = 0;
-
-        while (totalBytesRead < count)
-        {
-            int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, count - totalBytesRead);
-            if (bytesRead == 0)
-            {
-                if (sourceStream.Position == 0 || !EnableLooping)
-                {
-                    // something wrong with the source stream
-                    break;
-                }
-                // loop
-                sourceStream.Position = 0;
-            }
-            totalBytesRead += bytesRead;
-        }
-        return totalBytesRead;
     }
 }

@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LoopStream.cs" />
     <Compile Include="Program.cs">
       <SubType>Form</SubType>
     </Compile>

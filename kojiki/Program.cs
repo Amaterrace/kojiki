@@ -27,6 +27,7 @@ namespace kojiki
         private string[] bgPass = new string[]
          { "kojiki_memu_back.bmp", "conf.bmp", "souns_list.bmp", "ana.bmp" };
         private string txbPass = "textbox.png";
+        private string framePass = "frame.png";
 
         // NAudio
         private AudioFileReader opening = new AudioFileReader(
@@ -71,6 +72,7 @@ namespace kojiki
         private string stext;
 
         private Image im;
+        private Image frame;
 
         public static void Main()
         {
@@ -120,6 +122,9 @@ namespace kojiki
             for (int i = 0; i < panel.Length; i++)
                 panel[i].BackgroundImage = Image.FromFile(file + bgPass[i]);
 
+            // 背景枠
+            frame = Image.FromFile(file + framePass);
+
             // テキストボックス
             im = Image.FromFile(file + txbPass);
 
@@ -140,6 +145,8 @@ namespace kojiki
             panel[gameNumber].MouseClick += new MouseEventHandler(textClick);
             text.MouseClick += new MouseEventHandler(textClick);
             panel[gameNumber].Paint += new PaintEventHandler(pnl_Paint);
+            panel[configNumber].Paint += new PaintEventHandler(frame_Paint);
+            panel[listNumber].Paint += new PaintEventHandler(frame_Paint);
 
             SetSoundsList();
 
@@ -367,6 +374,8 @@ namespace kojiki
                 lb[i].Width = textSize;
                 if (i == 0) lb[i].Text = Convert.ToString(vol * 100);
                 else lb[i].Text = tbStr[i - 1];
+                lb[i].ForeColor = Color.White;
+                lb[i].BackColor = Color.Transparent;
             }
             lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
             lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
@@ -392,6 +401,13 @@ namespace kojiki
             pX = im.Width * p;
             pY = im.Height * p;
             g.DrawImage(im, 15, 0, (int)pX, (int)pY);
+        }
+
+        public void frame_Paint(Object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            
+            g.DrawImage(frame, 0, 0, 780, 560);
         }
 
         public void play(LoopStream loop)

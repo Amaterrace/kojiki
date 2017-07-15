@@ -401,6 +401,8 @@ namespace kojiki
             pX = im.Width * p;
             pY = im.Height * p;
             g.DrawImage(im, 15, 0, (int)pX, (int)pY);
+
+            g.Dispose();
         }
 
         public void frame_Paint(Object sender, PaintEventArgs e)
@@ -408,6 +410,8 @@ namespace kojiki
             Graphics g = e.Graphics;
             
             g.DrawImage(frame, 0, 0, 780, 560);
+
+            g.Dispose();
         }
 
         public void play(LoopStream loop)

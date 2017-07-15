@@ -209,6 +209,11 @@ namespace kojiki
             DrawPage(titleNumber);
         }
 
+        public void SetConfig()
+        {
+
+        }
+
         public void DrawGame()
         {
             waveOut.Stop();
@@ -282,9 +287,9 @@ namespace kojiki
 
             if (panel[configNumber].Visible)
                 // newTrackBar(int 置くパネルNo, double x(横幅の比), double y(高さの比))
-                newTrackBar(configNumber, 0.1, 0.15);
+                SetTrackBar(configNumber, 0.1, 0.15);
             else if (panel[listNumber].Visible)
-                newTrackBar(listNumber, 0.1, 0.8);
+                SetTrackBar(listNumber, 0.1, 0.8);
         }
 
         public void ListBt_Click(Object sender, EventArgs e)
@@ -356,7 +361,7 @@ namespace kojiki
         }
 
         //======================トラックバー=============================
-        public void newTrackBar(int OnPanel, double x, double y)
+        public void SetTrackBar(int OnPanel, double x, double y)
         {
             tb.TickStyle = TickStyle.Both;
             // 最小値、最大値を設定
@@ -387,7 +392,7 @@ namespace kojiki
             lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
             lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
             lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
-            lb[3].Location = new Point(tbX - textSize, tbY);
+            lb[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tb.Height));
             for (int j = 0; j < lb.Length; j++) panel[OnPanel].Controls.Add(lb[j]);
         }
 

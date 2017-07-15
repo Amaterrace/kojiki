@@ -37,7 +37,6 @@ namespace kojiki
         private WaveOut waveOut = new WaveOut();
 
         const int numFile = 4;  // BGM内のファイル数
-        private string name;
         private string[][] fileName =
         {
             Directory.GetFiles(
@@ -157,6 +156,7 @@ namespace kojiki
 
         public void SetSoundsList()
         {
+            string name;
             int k = 0, l = 0;
             for (int i = 0; i < numFile; i++)
             {
@@ -211,6 +211,7 @@ namespace kojiki
 
         public void DrawGame()
         {
+            waveOut.Stop();
             waveOut.Stop();
 
             DrawPage(gameNumber);
@@ -271,6 +272,8 @@ namespace kojiki
                     DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
                     if (result == DialogResult.Yes)
                     {
+                        waveOut.Stop();
+                        waveOut.Dispose();
                         Application.Exit();
                     }
                     break;
@@ -298,9 +301,12 @@ namespace kojiki
                     if (k == int.Parse(btNum))
                     {
                         waveOut.Stop();
+                        waveOut.Dispose();
                         reader = new AudioFileReader(@fileName[i][j]);
                         loop = new LoopStream(reader);
                         play(loop);
+
+                        loop.Dispose();
                         break;
                     }
                 }
@@ -310,6 +316,7 @@ namespace kojiki
         public void stopBt_Cilck(Object sender, EventArgs e)
         {
             waveOut.Stop();
+            waveOut.Dispose();
         }
 
         //=======================マウス================================

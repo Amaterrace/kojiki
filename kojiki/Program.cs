@@ -37,7 +37,6 @@ namespace kojiki
         private WaveOut waveOut = new WaveOut();
 
         const int numFile = 4;  // BGM内のファイル数
-        private string name;
         private string[][] fileName =
         {
             Directory.GetFiles(
@@ -157,6 +156,7 @@ namespace kojiki
 
         public void SetSoundsList()
         {
+            string name;
             int k = 0, l = 0;
             for (int i = 0; i < numFile; i++)
             {
@@ -209,8 +209,14 @@ namespace kojiki
             DrawPage(titleNumber);
         }
 
+        public void SetConfig()
+        {
+
+        }
+
         public void DrawGame()
         {
+            waveOut.Stop();
             waveOut.Stop();
 
             DrawPage(gameNumber);
@@ -271,6 +277,8 @@ namespace kojiki
                     DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
                     if (result == DialogResult.Yes)
                     {
+                        waveOut.Stop();
+                        waveOut.Dispose();
                         Application.Exit();
                     }
                     break;
@@ -279,9 +287,9 @@ namespace kojiki
 
             if (panel[configNumber].Visible)
                 // newTrackBar(int 置くパネルNo, double x(横幅の比), double y(高さの比))
-                newTrackBar(configNumber, 0.1, 0.15);
+                SetTrackBar(configNumber, 0.1, 0.15);
             else if (panel[listNumber].Visible)
-                newTrackBar(listNumber, 0.1, 0.8);
+                SetTrackBar(listNumber, 0.1, 0.8);
         }
 
         public void ListBt_Click(Object sender, EventArgs e)
@@ -298,9 +306,12 @@ namespace kojiki
                     if (k == int.Parse(btNum))
                     {
                         waveOut.Stop();
+                        waveOut.Dispose();
                         reader = new AudioFileReader(@fileName[i][j]);
                         loop = new LoopStream(reader);
                         play(loop);
+
+                        loop.Dispose();
                         break;
                     }
                 }
@@ -310,6 +321,7 @@ namespace kojiki
         public void stopBt_Cilck(Object sender, EventArgs e)
         {
             waveOut.Stop();
+            waveOut.Dispose();
         }
 
         //=======================マウス================================
@@ -349,7 +361,7 @@ namespace kojiki
         }
 
         //======================トラックバー=============================
-        public void newTrackBar(int OnPanel, double x, double y)
+        public void SetTrackBar(int OnPanel, double x, double y)
         {
             tb.TickStyle = TickStyle.Both;
             // 最小値、最大値を設定
@@ -380,7 +392,7 @@ namespace kojiki
             lb[0].Location = new Point(tbX + tb.Width, (int)(tbY + 0.25 * tb.Height));
             lb[1].Location = new Point(tbX, (int)(tbY - 0.5 * tb.Height));
             lb[2].Location = new Point(tbX + tb.Width - textSize, (int)(tbY - 0.5 * tb.Height));
-            lb[3].Location = new Point(tbX - textSize, tbY);
+            lb[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tb.Height));
             for (int j = 0; j < lb.Length; j++) panel[OnPanel].Controls.Add(lb[j]);
         }
 
@@ -401,6 +413,8 @@ namespace kojiki
             pX = im.Width * p;
             pY = im.Height * p;
             g.DrawImage(im, 15, 0, (int)pX, (int)pY);
+
+            g.Dispose();
         }
 
         public void frame_Paint(Object sender, PaintEventArgs e)
@@ -408,6 +422,8 @@ namespace kojiki
             Graphics g = e.Graphics;
             
             g.DrawImage(frame, 0, 0, 780, 560);
+
+            g.Dispose();
         }
 
         public void play(LoopStream loop)

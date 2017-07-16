@@ -166,7 +166,7 @@ namespace kojiki
                     listBt[k] = new Button();
                     listBt[k].Text = ">" + k.ToString();
                     listBt[k].Width = listBtWidth;
-                    listBt[k].Location = new Point(i * 200, j * 30 + 5);
+                    listBt[k].Location = new Point(i * 200 + 20, j * 30 + 20);
                     panel[listNumber].Controls.Add(listBt[k]);
                     listBt[k].Click += new EventHandler(ListBt_Click);
 
@@ -175,7 +175,7 @@ namespace kojiki
                                                 ("0" + l.ToString() + ".", "");
                     listLb[i].Text = name.Replace(".bgm", "");
                     listLb[i].Width = 200 - listBtWidth;
-                    listLb[i].Location = new Point(i * 200 + listBtWidth, j * 30 + 5);
+                    listLb[i].Location = new Point(i * 200 + 20 + listBtWidth, j * 30 + 20);
                     listLb[i].BackColor = Color.Transparent;
                     listLb[i].ForeColor = Color.White;
                     panel[listNumber].Controls.Add(listLb[i]);
@@ -191,6 +191,10 @@ namespace kojiki
             listStopBt.Click += new EventHandler(stopBt_Cilck);
         }
 
+        public void SetConfig()
+        {
+
+        }
         //=====================描画関数==================================
         public void DrawPage(int pageNumber)
         {
@@ -209,15 +213,10 @@ namespace kojiki
             DrawPage(titleNumber);
         }
 
-        public void SetConfig()
-        {
-
-        }
-
         public void DrawGame()
         {
             waveOut.Stop();
-            waveOut.Stop();
+            waveOut.Dispose();
 
             DrawPage(gameNumber);
 

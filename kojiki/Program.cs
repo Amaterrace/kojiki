@@ -56,9 +56,9 @@ namespace kojiki
 
         private float vol = 0.1f;  // 初期値
         private TrackBar[] tb = new TrackBar[3];
-        private Label[] tbLb1 = new Label[4];
-        private Label[] tbLb2 = new Label[4];
-        private Label[] tbLb3 = new Label[4];
+        private Label[] trackLabel1 = new Label[4];
+        private Label[] trackLabel2 = new Label[4];
+        private Label[] trackLabel3 = new Label[4];
         private string[][] tbStr = new string[][]
         {
             new[] { "min", "Max", "音量" },
@@ -110,11 +110,11 @@ namespace kojiki
                 tb[i].ValueChanged += new EventHandler(tb_ValueChanged);
             }
 
-            for (int i = 0; i < tbLb1.Length; i++)
+            for (int i = 0; i < trackLabel1.Length; i++)
             {
-                tbLb1[i] = new Label();
-                tbLb2[i] = new Label();
-                tbLb3[i] = new Label();
+                trackLabel1[i] = new Label();
+                trackLabel2[i] = new Label();
+                trackLabel3[i] = new Label();
             }
 
             double x = 0.5 * (double)w - 50, y = 0.5 * (double)h - 25;
@@ -409,13 +409,13 @@ namespace kojiki
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (trackBar == tb[0]) panel[OnPanel].Controls.Add(tbLb1[i]);
-                    else if (trackBar == tb[2]) panel[OnPanel].Controls.Add(tbLb3[i]);
+                    if (trackBar == tb[0]) panel[OnPanel].Controls.Add(trackLabel1[i]);
+                    else if (trackBar == tb[2]) panel[OnPanel].Controls.Add(trackLabel3[i]);
                 }
             }
             else if (OnPanel == listNumber)
             {
-                for (int i = 0; i < 4; i++) panel[OnPanel].Controls.Add(tbLb2[i]);
+                for (int i = 0; i < 4; i++) panel[OnPanel].Controls.Add(trackLabel2[i]);
             }
 
         }
@@ -426,48 +426,48 @@ namespace kojiki
             const int textSize = 30;
             if (trackBar == tb[0])
             {
-                for (int i = 0; i < tbLb1.Length; i++)
+                for (int i = 0; i < trackLabel1.Length; i++)
                 {
-                    tbLb1[i].Width = textSize;
-                    if (i == 0) tbLb1[i].Text = Convert.ToString(vol * 100);
-                    else tbLb1[i].Text = tbStr[0][i - 1];
-                    tbLb1[i].ForeColor = Color.White;
-                    tbLb1[i].BackColor = Color.Transparent;
+                    trackLabel1[i].Width = textSize;
+                    if (i == 0) trackLabel1[i].Text = Convert.ToString(vol * 100);
+                    else trackLabel1[i].Text = tbStr[0][i - 1];
+                    trackLabel1[i].ForeColor = Color.White;
+                    trackLabel1[i].BackColor = Color.Transparent;
                 }
-                tbLb1[0].Location = new Point(tbX + tbw, (int)(tbY + 0.25 * tbh));
-                tbLb1[1].Location = new Point(tbX, (int)(tbY - 0.5 * tbh));
-                tbLb1[2].Location = new Point(tbX + tbw - textSize, (int)(tbY - 0.5 * tbh));
-                tbLb1[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tbh));
+                trackLabel1[0].Location = new Point(tbX + tbw, (int)(tbY + 0.25 * tbh));
+                trackLabel1[1].Location = new Point(tbX, (int)(tbY - 0.5 * tbh));
+                trackLabel1[2].Location = new Point(tbX + tbw - textSize, (int)(tbY - 0.5 * tbh));
+                trackLabel1[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tbh));
             }
             else if (trackBar == tb[1])
             {
-                for (int i = 0; i < tbLb2.Length; i++)
+                for (int i = 0; i < trackLabel2.Length; i++)
                 {
-                    tbLb2[i].Width = textSize;
-                    if (i == 0) tbLb2[i].Text = Convert.ToString(vol * 100);
-                    else tbLb2[i].Text = tbStr[0][i - 1];
-                    tbLb2[i].ForeColor = Color.White;
-                    tbLb2[i].BackColor = Color.Transparent;
+                    trackLabel2[i].Width = textSize;
+                    if (i == 0) trackLabel2[i].Text = Convert.ToString(vol * 100);
+                    else trackLabel2[i].Text = tbStr[0][i - 1];
+                    trackLabel2[i].ForeColor = Color.White;
+                    trackLabel2[i].BackColor = Color.Transparent;
                 }
-                tbLb2[0].Location = new Point(tbX + tbw, (int)(tbY + 0.25 * tbh));
-                tbLb2[1].Location = new Point(tbX, (int)(tbY - 0.5 * tbh));
-                tbLb2[2].Location = new Point(tbX + tbw - textSize, (int)(tbY - 0.5 * tbh));
-                tbLb2[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tbh));
+                trackLabel2[0].Location = new Point(tbX + tbw, (int)(tbY + 0.25 * tbh));
+                trackLabel2[1].Location = new Point(tbX, (int)(tbY - 0.5 * tbh));
+                trackLabel2[2].Location = new Point(tbX + tbw - textSize, (int)(tbY - 0.5 * tbh));
+                trackLabel2[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tbh));
             }
             else if (trackBar == tb[2])
             {
-                for (int i = 0; i < tbLb3.Length; i++)
+                for (int i = 0; i < trackLabel3.Length; i++)
                 {
-                    tbLb3[i].Width = textSize;
-                    if (i == 0) tbLb3[i].Text = Convert.ToString(textSpeed);
-                    else tbLb3[i].Text = tbStr[1][i - 1];
-                    tbLb3[i].ForeColor = Color.White;
-                    tbLb3[i].BackColor = Color.Transparent;
+                    trackLabel3[i].Width = textSize;
+                    if (i == 0) trackLabel3[i].Text = Convert.ToString(textSpeed);
+                    else trackLabel3[i].Text = tbStr[1][i - 1];
+                    trackLabel3[i].ForeColor = Color.White;
+                    trackLabel3[i].BackColor = Color.Transparent;
                 }
-                tbLb3[0].Location = new Point(tbX + tbw, (int)(tbY + 0.25 * tbh));
-                tbLb3[1].Location = new Point(tbX, (int)(tbY - 0.5 * tbh));
-                tbLb3[2].Location = new Point(tbX + tbw - textSize, (int)(tbY - 0.5 * tbh));
-                tbLb3[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tbh));
+                trackLabel3[0].Location = new Point(tbX + tbw, (int)(tbY + 0.25 * tbh));
+                trackLabel3[1].Location = new Point(tbX, (int)(tbY - 0.5 * tbh));
+                trackLabel3[2].Location = new Point(tbX + tbw - textSize, (int)(tbY - 0.5 * tbh));
+                trackLabel3[3].Location = new Point(tbX - textSize - 10, (int)(tbY + 0.25 * tbh));
             }
         }
 
@@ -477,18 +477,18 @@ namespace kojiki
             {
                 vol = tb[0].Value / 100f;
                 waveOut.Volume = vol;
-                tbLb1[0].Text = Convert.ToString(tb[0].Value);
+                trackLabel1[0].Text = Convert.ToString(tb[0].Value);
             }
             else if ((TrackBar)sender == tb[1])
             {
                 vol = tb[1].Value / 100f;
                 waveOut.Volume = vol;
-                tbLb2[0].Text = Convert.ToString(tb[1].Value);
+                trackLabel2[0].Text = Convert.ToString(tb[1].Value);
             }
             else if ((TrackBar)sender == tb[2])
             {
                 textSpeed = 101 - tb[2].Value;
-                tbLb3[0].Text = Convert.ToString(tb[2].Value);
+                trackLabel3[0].Text = Convert.ToString(tb[2].Value);
             }
         }
 

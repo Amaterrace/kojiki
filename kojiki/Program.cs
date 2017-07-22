@@ -3,7 +3,6 @@ using System.Windows.Forms;
 using System.Drawing;
 using NAudio.Wave;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace kojiki
 {
@@ -316,11 +315,6 @@ namespace kojiki
                 }
             }
             JUMP:;
-        }
-
-        public async Task TimerWait(int ms)
-        {
-            await Task.Delay(ms);
         }
 
         //======================ボタン================================

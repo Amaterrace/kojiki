@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using NAudio.Wave;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace kojiki
 {
@@ -67,14 +68,17 @@ namespace kojiki
 
         // 本文
         private Label text;
-        private Timer timer;
+        private Timer timer = new Timer();
         private int clickCount = 1;
-        private int nextChar = 0;
+        private int nextCharNum = 0;
         private int textSpeed = 50; //[ms]
         private int textFontSize = 12;  // フォントサイズ[pt]
         private string[] font = new string[]
             {"Arial", "ＭＳ Ｐ明朝", "ＭＳ Ｐゴシック"};
         private string stext;
+
+        // テキストスピードのサンプル用
+        private Label sampleText;
 
         private Image im;
         private Image frame;
@@ -165,6 +169,7 @@ namespace kojiki
 
             SetConfig();
             SetSoundsList();
+            InitializeTimer();
 
             DrawTitle();
         }
@@ -216,6 +221,16 @@ namespace kojiki
             // newTrackBar(int 置くパネルNo, double x(横幅の比), double y(高さの比))
             SetTrackBar(tb[0], configNumber, 0.1, 0.15);
             SetTrackBar(tb[2], configNumber, 0.1, 0.3);
+
+            // サンプルテキストの設定
+            sampleText = new Label();
+            sampleText.Location = new Point(400, 180);
+            sampleText.Width = 350;
+            sampleText.Height = 50;
+            sampleText.Font = new Font(font[1], 14, FontStyle.Italic);
+            sampleText.Padding = new Padding(50, 15, 0, 0);
+            sampleText.BackColor = Color.FromArgb(80, 204, 204, 204);
+            panel[configNumber].Controls.Add(sampleText);
         }
         //=====================描画関数==================================
         public void DrawPage(int pageNumber)
@@ -239,12 +254,11 @@ namespace kojiki
         {
             waveOut.Stop();
             waveOut.Dispose();
-            timer = new Timer();
             DrawPage(gameNumber);
 
             stext = ShowText(clickCount);
-            // タイマーセットアップ&起動
-            InitializeTimer();
+
+            timer.Enabled = true;
         }
 
         public string ShowText(int n)
@@ -265,18 +279,48 @@ namespace kojiki
         private void InitializeTimer()
         {
             timer.Interval = textSpeed;
-            timer.Enabled = true;
+            timer.Enabled = false;
             timer.Tick += new EventHandler(timer_Tick);
         }
 
+        int flug = 0;
         private void timer_Tick(object sender, EventArgs e)
         {
-            if (nextChar == stext.Length) timer.Enabled = false;
-            else
+            if (panel[gameNumber].Visible)
             {
-                text.Text += stext[nextChar];
-                nextChar++;
+                if (nextCharNum == stext.Length)
+                    timer.Enabled = false;
+                else
+                {
+                    text.Text += stext[nextCharNum];
+                    nextCharNum++;
+                }
             }
+            else if (panel[configNumber].Visible)
+            {
+                if (nextCharNum == stext.Length)
+                {
+                    if (flug < 2000 / (timer.Interval + 10) - 600 / (timer.Interval + 10))
+                    {
+                        flug++;
+                        goto JUMP;
+                    }
+                    sampleText.ResetText();
+                    nextCharNum = 0;
+                    flug = 0;
+                }
+                else
+                {
+                    sampleText.Text += stext[nextCharNum];
+                    nextCharNum++;
+                }
+            }
+            JUMP:;
+        }
+
+        public async Task TimerWait(int ms)
+        {
+            await Task.Delay(ms);
         }
 
         //======================ボタン================================
@@ -289,6 +333,9 @@ namespace kojiki
                     break;
                 case "CONFIG":
                     DrawPage(configNumber);
+                    stext = "これはサンプルテキストです。";
+                    sampleText.ResetText();
+                    timer.Enabled = true;
                     break;
                 case "SOUNDS-LIST-":
                     DrawPage(listNumber);
@@ -298,6 +345,7 @@ namespace kojiki
                     DialogResult result = MessageBox.Show(msg, "終了", MessageBoxButtons.YesNo);
                     if (result == DialogResult.Yes)
                     {
+                        timer.Enabled = false;
                         waveOut.Stop();
                         waveOut.Dispose();
                         Application.Exit();
@@ -348,6 +396,7 @@ namespace kojiki
                 DialogResult result = MessageBox.Show(msg, "メニュー", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                 {
+                    nextCharNum = 0;
                     waveOut.Stop();
                     if (timer != null) timer.Dispose();
                     DrawTitle();
@@ -369,7 +418,7 @@ namespace kojiki
                     clickCount++;
                     text.ResetText();
                     stext = ShowText(clickCount);
-                    nextChar = 0;
+                    nextCharNum = 0;
                     timer.Enabled = true;
                 }
             }
@@ -487,7 +536,7 @@ namespace kojiki
             }
             else if ((TrackBar)sender == tb[2])
             {
-                textSpeed = 101 - tb[2].Value;
+                timer.Interval = 101 - tb[2].Value;
                 trackLabel3[0].Text = Convert.ToString(tb[2].Value);
             }
         }

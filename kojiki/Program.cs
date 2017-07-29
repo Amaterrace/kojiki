@@ -25,7 +25,7 @@ namespace kojiki
         // file pass + name
         private string file = "Asset/";
         private string[] bgPass = new string[]
-         { "kojiki_memu_back.bmp", "conf.bmp", "souns_list.bmp", "ana.bmp" };
+         { "kojiki_memu_back.png", "conf.png", "souns_list.png" };
         private string txbPass = "textbox.png";
         private string framePass = "frame.png";
 
@@ -67,6 +67,7 @@ namespace kojiki
 
         // 本文
         private Label text;
+        private Label name;
         private Timer timer = new Timer();
         private int clickCount = 1;
         private int nextCharNum = 0;
@@ -75,12 +76,14 @@ namespace kojiki
         private string[] font = new string[]
             {"Arial", "ＭＳ Ｐ明朝", "ＭＳ Ｐゴシック"};
         private string stext;
+        private string[] textInfo = new string[4];
 
         // テキストスピードのサンプル用
         private Label sampleText;
 
         private Image im;
         private Image frame;
+        private int flug = 0;
 
         public static void Main()
         {
@@ -137,7 +140,7 @@ namespace kojiki
             }
 
             // 背景配置
-            for (int i = 0; i < panel.Length; i++)
+            for (int i = 0; i < panel.Length - 1; i++)
                 panel[i].BackgroundImage = Image.FromFile(file + bgPass[i]);
 
             // 背景枠
@@ -154,6 +157,14 @@ namespace kojiki
             // フォントサイズを指定
             text.Font = new Font(font[1], textFontSize);
             panel[gameNumber].Controls.Add(text);
+
+            name = new Label();
+            name.Width = 100; text.Height = 100;
+            name.Location = new Point(200, 400);
+            name.BackColor = Color.Transparent;
+            // フォントサイズを指定
+            name.Font = new Font(font[1], textFontSize);
+            panel[gameNumber].Controls.Add(name);
 
             // マウスClick動作
             for (int i = 1; i < panel.Length; i++)
@@ -178,7 +189,7 @@ namespace kojiki
         /// </summary>
         public void SetSoundsList()
         {
-            string name;
+            string soundName;
             int k = 0, l = 0;
             for (int i = 0; i < numFile; i++)
             {
@@ -193,9 +204,9 @@ namespace kojiki
                     listBt[k].Click += new EventHandler(ListBt_Click);
 
                     listLb[i] = new Label();
-                    name = Path.GetFileName(fileName[i][j]).Replace
+                    soundName = Path.GetFileName(fileName[i][j]).Replace
                                                 ("0" + l.ToString() + ".", "");
-                    listLb[i].Text = name.Replace(".bgm", "");
+                    listLb[i].Text = soundName.Replace(".bgm", "");
                     listLb[i].Width = 200 - listBtWidth;
                     listLb[i].Location = new Point(i * 200 + 20 + listBtWidth, j * 30 + 20);
                     listLb[i].BackColor = Color.Transparent;
@@ -253,16 +264,62 @@ namespace kojiki
         {
             waveOut.Stop();
             waveOut.Dispose();
-            DrawPage(gameNumber);
 
+            text.ResetText();
+            clickCount = 1;
             stext = ShowText(clickCount);
+            textInfo = stext.Split('/');
 
+            textExecute(textInfo);
             timer.Enabled = true;
+
+            DrawPage(gameNumber);
+        }
+
+        public void textExecute(string[] info)
+        {
+            if (info[0] != "narr")
+            {
+                name.ResetText();
+                name.Text = info[0];
+            }
+            else name.Text = "";
+
+            if (info[1] != "n")
+            {
+                panel[gameNumber].BackgroundImage =
+                    Image.FromFile(file + "背景/" + info[1]);
+            }
+
+            if (info[2] != "n")
+            {
+                if (waveOut.PlaybackState == PlaybackState.Playing)
+                {
+                    waveOut.Stop();
+                    waveOut.Dispose();
+                }
+
+                for (int i = 0; i < numFile; i++)
+                {
+                    for (int j = 0; j < fileName[i].Length; j++)
+                    {
+                        if (info[2] == Path.GetFileName(fileName[i][j]))
+                        {
+                            reader = new AudioFileReader(@fileName[i][j]);
+                            break;
+                        }
+                    }
+                }
+                loop = new LoopStream(reader);
+                play(loop);
+
+                loop.Dispose();
+            }
         }
 
         public string ShowText(int n)
         {
-            StreamReader sr = new StreamReader("test.txt", System.Text.Encoding.Default);
+            StreamReader sr = new StreamReader(file + "test2.txt", System.Text.Encoding.Default);
             int counter = 0;
             string line;
 
@@ -282,16 +339,15 @@ namespace kojiki
             timer.Tick += new EventHandler(timer_Tick);
         }
 
-        int flug = 0;
         private void timer_Tick(object sender, EventArgs e)
         {
             if (panel[gameNumber].Visible)
             {
-                if (nextCharNum == stext.Length)
+                if (nextCharNum == textInfo[3].Length)
                     timer.Enabled = false;
                 else
                 {
-                    text.Text += stext[nextCharNum];
+                    text.Text += textInfo[3][nextCharNum];
                     nextCharNum++;
                 }
             }
@@ -314,7 +370,7 @@ namespace kojiki
                     nextCharNum++;
                 }
             }
-            JUMP:;
+        JUMP:;
         }
 
         //======================ボタン================================
@@ -404,7 +460,7 @@ namespace kojiki
             {
                 if (timer.Enabled)
                 {
-                    text.Text = stext;
+                    text.Text = textInfo[3];
                     timer.Enabled = false;
                 }
                 else
@@ -412,6 +468,8 @@ namespace kojiki
                     clickCount++;
                     text.ResetText();
                     stext = ShowText(clickCount);
+                    textInfo = stext.Split('/');
+                    textExecute(textInfo);
                     nextCharNum = 0;
                     timer.Enabled = true;
                 }
